@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+	<title>AudioParam interface - SetValueAtTime tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+	<script type="text/javascript" src="audioparam-specific.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Basic test.
+		*/
+		(function() {
+			executeTest("Basic setValueAtTime", arrangeFn, assertFn);
+
+			//Schedule setValueAtTime to take effect after 500 samples.
+			function arrangeFn(ac, audioParam) {
+				audioParam.value=0;
+				audioParam.setValueAtTime(1, this.convertSamplesToSeconds(500));
+			}
+
+			//Assert that the value changes at the correct time.
+			function assertFn(actualData) {
+				assert_approx_equals(actualData[0], 0, 0, "Expect start of output to be 0");
+				assert_approx_equals(actualData[499], 0, 0, "Expect output to be 0 just before setValueAtTime due");
+				assert_approx_equals(actualData[500], 1, 0, "Expect output to be 1 just after setValueAtTime due");
+			}
+		})();
+	</script>
+</body>
+</html>

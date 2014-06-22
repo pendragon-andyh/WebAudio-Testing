@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+	<title>Index page | WebAudio</title>
+
+	<style type="text/css">
+		html {font-family:DejaVu Sans, Bitstream Vera Sans, Arial, Sans; color:#666;}
+		section {background-color:#eef; border:solid 1px #668; border-radius:5px; padding:5px 10px 12px; margin:10px;}
+		h2 {margin:0 0 10px 0}
+		table {border:solid 1px #888; border-collapse:collapse;width:100%;}
+		td,th {text-align:left;border:solid 1px #888;width:65px;padding:4px;}
+		td:first-child {width:1000px;}
+		tr.pending {background-color:rgb(255, 255, 200);}
+		tr.running {background-color:silver;}
+		tr.done-fail {background-color:pink;}
+		tr.done-ok {background-color:lightgreen;}
+		iframe {display:none;}
+	</style>
+	
+	<script type="text/javascript" src="jquery-2.1.0.min.js"></script>
+</head>
+<body>
+	<button id="runTests">Run all tests</button>
+
+	<section>
+		<h2>AudioBufferSource</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>URL</th><th>OK</th><th>Wrong</th><th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>webaudio/the-audio-api/the-audiobuffersourcenode-interface/attribute-buffer.html</td><td></td><td></td><td></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<section>
+		<h2>AudioParam</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>URL</th><th>OK</th><th>Wrong</th><th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>webaudio/the-audio-api/the-audioparam-interface/method-setValueAtTime.html</td><td></td><td></td><td></td>
+				</tr>
+				<tr>
+					<td>webaudio/the-audio-api/the-audioparam-interface/method-linearRampToValueAtTime.html</td><td></td><td></td><td></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<section>
+		<h2>GainNode</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>URL</th><th>OK</th><th>Wrong</th><th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>webaudio/the-audio-api/the-gainnode-interface/attribute-gain.html</td><td></td><td></td><td></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<section>
+		<h2>Oscillator</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>URL</th><th>OK</th><th>Wrong</th><th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>webaudio/the-audio-api/the-oscillatornode-interface/attribute-detune.html</td><td></td><td></td><td></td>
+				</tr>
+				<tr>
+					<td>webaudio/the-audio-api/the-oscillatornode-interface/attribute-frequency.html</td><td></td><td></td><td></td>
+				</tr>
+				<tr>
+					<td>webaudio/the-audio-api/the-oscillatornode-interface/attribute-type.html</td><td></td><td></td><td></td>
+				</tr>
+				<tr>
+					<td>webaudio/the-audio-api/the-oscillatornode-interface/method-setPeriodicWave.html</td><td></td><td></td><td></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<section>
+		<h2>WaveShaperNode</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>URL</th><th>OK</th><th>Wrong</th><th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>webaudio/the-audio-api/the-waveshapernode-interface/attribute-curve.html</td><td></td><td></td><td></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<script type="text/javascript">
+		$(function() {
+			var $testRows=$("tbody tr").each(function() {
+				var $url=$(this).children().first();
+				var $link=$url.wrapInner("<a></a>");
+				$link.children().attr("href", $url.text());
+			});
+
+			$("#runTests").click(function() {
+				$testRows.each(function() {
+					this.className="pending";
+				});
+				runNextTest()
+			});
+		});
+
+		var $currentTestRow;
+		var timeoutHandle;
+
+		function runNextTest() {
+			clearTimeout(timeoutHandle);
+			$currentTestRow=$("tr.pending").first().removeClass("pending").addClass("running").each(function() {
+				var currentURL=$(this).find("a").text();
+				timeoutHandle=setTimeout(doTimeout, 5000);
+				$("iframe").attr("src", currentURL);
+			});
+		}
+
+		function reportToParentWindow(allRes, status) {
+			var count=allRes.length, fail=0, ok=0;
+			for(var i=0;i<count;i++) {
+				fail+=allRes[i].status;
+				ok+=(1-allRes[i].status);
+			}
+
+			$currentTestRow.children().each(function(index) {
+				switch(index) {
+					case 1:
+						$(this).text(ok);
+						break;
+					case 2:
+						$(this).text(fail);
+						break;
+					case 3:
+						$(this).text(count);
+						break;
+				}
+			});
+
+			$currentTestRow.removeClass("running").addClass(fail==0?"done-ok":"done-fail")
+
+			runNextTest();
+		}
+
+		function doTimeout() {
+			$currentTestRow.children().each(function(index) {
+				switch(index) {
+					case 2:
+						$(this).text("Error");
+						break;
+				}
+			});
+
+			$currentTestRow.removeClass("running").addClass("done-fail")
+
+			runNextTest();
+		}
+	</script>
+	
+	<iframe src="" />
+</body>
+</html>

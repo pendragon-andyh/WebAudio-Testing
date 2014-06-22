@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+	<title>GainNode interface - Gain tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+	<script type="text/javascript" src="gainnode-specific.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		TODO
+		*/
+		(function() {
+			var inputChannelData=[[-1.0, 0, 1.0], [1.0, 0, -1.0]];
+			var expectedChannelData=[[-2.0, 0, 2.0], [2.0, 0, -2.0]];
+			executeTest("Simple positive gain - two channels",
+				inputChannelData, expectedChannelData, { gain: 2 });
+		})();
+
+		/*
+		TODO
+		*/
+		(function() {
+			var inputChannelData=[[-1.0, 0, 1.0], [0.5, 0, -0.5]];
+			var expectedChannelData=[[0.5, 0, -0.5], [-0.25, 0, 0.25]];
+			executeTest("Simple negative gain - two channels",
+				inputChannelData, expectedChannelData, { gain: -0.5 });
+		})();
+
+		/*
+		TODO
+		*/
+		(function() {
+			var inputChannelData=[[-1.0, 0, 1.0], [1.0, 0, -1.0]];
+			var expectedChannelData=[[0, 0, 0], [0, 0, 0]];
+			executeTest("Simple zero gain - two channels",
+				inputChannelData, expectedChannelData, { gain: 0 });
+		})();
+
+		/*
+		TODO
+		*/
+		(function() {
+			var inputChannelData=[[-1.0, 0, 1.0], [1.0, 0, -1.0]];
+			var expectedChannelData=[[-2.0, 0, 4.0], [2.0, 0, -4.0]];
+			executeTest("Schedule SetValueAtTime - two channels",
+				inputChannelData, expectedChannelData, { gain: 2 }, setGainValueAtTime);
+
+			function setGainValueAtTime(ac, node) {
+				node.gain.setValueAtTime(4, this.convertSamplesToSeconds(2));
+			}
+		})();
+	</script>
+</body>
+</html>

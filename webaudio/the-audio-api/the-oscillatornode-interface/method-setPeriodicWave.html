@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+	<title>OscillatorNode interface - setPeriodicWave tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Inverted sine using custom periodic wave.
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("setPeriodicWave - inverted sine", doArrange, doAssert,
+				{ frequency: freqForTwoCycles });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+
+				var periodicWave=ac.createPeriodicWave(new Float32Array([0, 0]), new Float32Array([0, -1]));
+				node.setPeriodicWave(periodicWave);
+
+				assert_equals(node.type, "custom", "Expect setPeriodicWave() to set type to 'custom'");
+
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect inverted-sine wave to start at 0");
+				assert_approx_equals(channelData[1250], -1, 0.05, "Expect inverted-sine wave to peak at -1");
+				assert_approx_equals(channelData[2500], 0, 0.01, "Expect inverted-sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[3750], 1, 0.05, "Expect inverted-sine wave to peak at 1");
+				assert_approx_equals(channelData[5000], 0, 0.01, "Expect inverted-sine wave to end at 0");
+			}
+		})();
+	</script>
+</body>
+</html>

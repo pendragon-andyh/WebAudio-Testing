@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+	<title>AudioBufferSourceNode interface - Buffer tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Two-value single-channel looping buffer
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/500;
+			WebAudioTestHarness.runTest("Buffer - Two-value single-channel looping buffer", doArrange, doAssert);
+
+			function doArrange(ac) {
+				var buffer=ac.createBuffer(1, 2, ac.sampleRate);
+				var data=buffer.getChannelData(0);
+				data[0]=1;
+				data[1]= -1;
+
+				var node=ac.createBufferSource();
+				node.connect(ac.destination);
+				node.buffer=buffer;
+				node.loop=true;
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 1, 0.01, "Expect 1st element to be 1");
+				assert_approx_equals(channelData[1], -1, 0.01, "Expect 2nd element to be -1");
+				assert_approx_equals(channelData[2], 1, 0.01, "Expect 3rd element to be 1");
+			}
+		})();
+		
+		/*
+		Single-value looping buffer - should give constant signal.
+		Chrome has bug were it thinks the buffer is too short.
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/500;
+			WebAudioTestHarness.runTest("Buffer - Single-value single-channel looping buffer", doArrange, doAssert);
+
+			function doArrange(ac) {
+				var buffer=ac.createBuffer(1, 1, ac.sampleRate);
+				var data=buffer.getChannelData(0);
+				data[0]=1;
+
+				var node=ac.createBufferSource();
+				node.connect(ac.destination);
+				node.buffer=buffer;
+				node.loop=true;
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 1, 0.01, "Expect 1st element to be 1");
+				assert_approx_equals(channelData[1], 1, 0.01, "Expect 2nd element to be 1");
+				assert_approx_equals(channelData[2], 1, 0.01, "Expect 3rd element to be 1");
+			}
+		})();
+		
+		/*
+		TODO
+		null buffer
+		2-channel buffer
+		*/
+	</script>
+</body>
+</html>

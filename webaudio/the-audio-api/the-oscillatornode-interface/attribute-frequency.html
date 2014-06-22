@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+	<title>OscillatorNode interface - Frequency tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Base frequency
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/500;
+			WebAudioTestHarness.runTest("Frequency - base", doArrange, doAssert,
+				{ frequency: freqForTwoCycles, type: "sine" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect sine wave to start at 0");
+				assert_approx_equals(channelData[125], 1, 0.05, "Expect sine wave to peak at 1");
+				assert_approx_equals(channelData[250], 0, 0.01, "Expect sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[375], -1, 0.05, "Expect sine wave to peak at -1");
+				assert_approx_equals(channelData[500], 0, 0.01, "Expect sine wave to end at 0");
+			}
+		})();
+
+		/*
+		Base frequency + 1 octave
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/500;
+			WebAudioTestHarness.runTest("Frequency + 1 octave", doArrange, doAssert,
+				{ frequency: freqForTwoCycles*2, type: "sine" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect sine wave to start at 0");
+				assert_approx_equals(channelData[63], 1, 0.05, "Expect sine wave to peak at 1");
+				assert_approx_equals(channelData[125], 0, 0.01, "Expect sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[188], -1, 0.05, "Expect sine wave to peak at -1");
+				assert_approx_equals(channelData[250], 0, 0.01, "Expect sine wave to end at 0");
+			}
+		})();
+
+		/*
+		Base frequency - 1 octave
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/500;
+			WebAudioTestHarness.runTest("Frequency - 1 octave", doArrange, doAssert,
+				{ frequency: freqForTwoCycles/2, type: "sine" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect sine wave to start at 0");
+				assert_approx_equals(channelData[250], 1, 0.05, "Expect sine wave to peak at 1");
+				assert_approx_equals(channelData[500], 0, 0.01, "Expect sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[750], -1, 0.05, "Expect sine wave to peak at -1");
+				assert_approx_equals(channelData[1000], 0, 0.01, "Expect sine wave to end at 0");
+			}
+		})();
+
+		/*
+		Base frequency - change octave after 1 cycle.
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/500;
+			WebAudioTestHarness.runTest("Frequency - change octave after 1 cycle", doArrange, doAssert,
+				{ type: "sine" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.frequency.value=freqForTwoCycles;
+				node.frequency.setValueAtTime(freqForTwoCycles*2, this.convertSamplesToSeconds(500));
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				//Base frequency.
+				assert_approx_equals(channelData[0], 0, 0.01, "Index 0 - Expect sine wave to start at 0");
+				assert_approx_equals(channelData[125], 1, 0.05, "Index 125 - Expect sine wave to peak at 1");
+				assert_approx_equals(channelData[250], 0, 0.01, "Index 250 - Expect sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[375], -1, 0.05, "Index 375 - Expect sine wave to peak at -1");
+				assert_approx_equals(channelData[500], 0, 0.01, "Index 500 - Expect sine wave to end at 0");
+
+				//Base frequency * 2.
+				assert_approx_equals(channelData[500+63], 1, 0.05, "Index 563 - Expect sine wave to peak at 1");
+				assert_approx_equals(channelData[500+125], 0, 0.01, "Index 625 - Expect sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[500+188], -1, 0.05, "Index 688 - Expect sine wave to peak at -1");
+				assert_approx_equals(channelData[500+250], 0, 0.01, "Index 750 - Expect sine wave to end at 0");
+			}
+		})();
+
+		/*
+		Throw exception if attempt to overwrite readonly property.
+		*/
+		(function() {
+			WebAudioTestHarness.runTest("Frequency - Throw exception if attempt to overwrite readonly property.",
+				doArrange, null, { type: "sine" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+
+				assert_throws(null,
+					function() { node.frequency=1234; },
+					"Expect exception because frequency is a readonly property");
+			}
+		})();
+	</script>
+</body>
+</html>

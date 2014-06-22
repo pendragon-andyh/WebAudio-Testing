@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+	<title>AudioParam interface - SetValueCurveAtTime tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+	<script type="text/javascript" src="audioparam-specific.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Basic test.
+		*/
+		(function() {
+			executeTest("Basic setValueCurveAtTime", arrangeFn, assertFn);
+
+			//Schedule setValueCurveAtTime to take effect immediately
+			function arrangeFn(ac, audioParam) {
+				audioParam.value=0;
+				var curve=new Float32Array([1, 0, 2, -1, 0]);
+				var start=0;
+				var duration=this.convertSamplesToSeconds(500);
+				audioParam.setValueCurveAtTime(curve, start, duration);
+			}
+
+			//Assert that the value changes at the correct time.
+			function assertFn(actualData) {
+				assert_approx_equals(actualData[0], 1, 0, "Index 0 - Expect output to be 1 at start of curve");
+				assert_approx_equals(actualData[100], 0, 0, "Index 100 - Expect output to pass through 0");
+				assert_approx_equals(actualData[200], 2, 0, "Index 200 - Expect output to pass through 2");
+				assert_approx_equals(actualData[300], -1, 0, "Index 300 - Expect output to pass through -1");
+				assert_approx_equals(actualData[400], 0, 0, "Index 400 - Expect output to be 0 at end of curve");
+
+				assert_approx_equals(actualData[51], 0.5, 0, "Index 150 - Expect interpolation between 1 and 0");
+			}
+		})();
+		
+		/*
+		Starts at correct time
+		*/
+		(function() {
+			executeTest("Basic setValueCurveAtTime", arrangeFn, assertFn);
+
+			//Schedule setValueCurveAtTime to take effect after 100 samples.
+			function arrangeFn(ac, audioParam) {
+				audioParam.value=0;
+				var curve=new Float32Array([1]);
+				var start=this.convertSamplesToSeconds(100);
+				var duration=this.convertSamplesToSeconds(500);
+				audioParam.setValueCurveAtTime(curve, start, duration);
+			}
+
+			//Assert that the value changes at the correct time.
+			function assertFn(actualData) {
+				assert_approx_equals(actualData[0], 0, 0, "Index 0 - Expect start of output to be 0");
+				assert_approx_equals(actualData[100], 0, 0, "Index 100 - Expect output to be 0 before start of curve");
+				assert_approx_equals(actualData[101], 1, 0, "Index 101 - Expect output to be 1 at start of curve");
+			}
+		})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+	<title>WaveShaperNode interface - Curve tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+	<script type="text/javascript" src="waveshapernode-specific.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Testing that -1, 0 and +1 map correctly to curve (with 1:1 correlation) - Two channels
+		======================================================================================
+		From the specification:
+			The input signal is nominally within the range -1 -> +1.
+			Each input sample within this range will index into the shaping curve with a signal level of zero corresponding
+				to the center value of the curve array.
+		*/
+		(function() {
+			var threeElementCurve=[2.0, -3.0, 4.0];
+			var inputChannelData=[[-1.0, 0, 1.0], [1.0, 0, -1.0]];
+			var expectedChannelData=[[2.0, -3.0, 4.0], [4.0, -3.0, 2.0]];
+			executeTest("Testing that -1, 0 and +1 map correctly to curve (with 1:1 correlation) - two channels",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(threeElementCurve) });
+		})();
+
+		/*
+		Testing interpolation (where inputs don't correlate directly to curve elements)
+		===============================================================================
+		From the specification:
+			The implementation must perform linear interpolation between adjacent points in the curve.
+		*/
+		(function() {
+			var threeElementCurve=[2.0, -3.0, 4.0];
+			var inputChannelData=[[-0.5, +0.5, +0.75]];
+			var expectedChannelData=[[-0.5, +0.5, +2.25]];
+			executeTest("Testing interpolation (where inputs don't correlate directly to curve elements)",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(threeElementCurve) });
+		})();
+
+		/*
+		Testing out-of-range inputs (should be mapped to the first/last elements of the curve)
+		======================================================================================
+		From the specification:
+			Any sample value less than -1 will correspond to the first value in the curve array.
+			Any sample value greater than +1 will correspond to the last value in the curve array.
+		*/
+		(function() {
+			var threeElementCurve=[2.0, -3.0, 4.0];
+			var inputChannelData=[[-1.5, +1.5]];
+			var expectedChannelData=[[2.0, 4.0]];
+			executeTest("Testing out-of-range inputs (should be mapped to the first/last elements of the curve)",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(threeElementCurve) });
+		})();
+
+		/*
+		Testing a 2-element curve (does not have a middle element)
+		==========================================================
+		From the specification:
+			Each input sample within this range will index into the shaping curve with a signal level of zero corresponding
+				to the center value of the curve array.
+			The implementation must perform linear interpolation between adjacent points in the curve.
+		*/
+		(function() {
+			var twoElementCurve=[2.0, -2.0];
+			var inputChannelData=[[-1.0, 0, 1.0]];
+			var expectedChannelData=[[2.0, 0.0, -2.0]];
+			executeTest("Testing a 2-element curve (does not have a middle element)",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(twoElementCurve) });
+		})();
+
+		/*
+		Testing a 4-element curve (does not have a middle element)
+		==========================================================
+		From the specification:
+			Each input sample within this range will index into the shaping curve with a signal level of zero corresponding
+				to the center value of the curve array.
+			The implementation must perform linear interpolation between adjacent points in the curve.
+		*/
+		(function() {
+			var fourElementCurve=[1.0, 2.0, 4.0, 7.0];
+			var inputChannelData=[[-1.0, 0, 1.0]];
+			var expectedChannelData=[[1.0, 3.0, 7.0]];
+			executeTest("Testing a 4-element curve (does not have a middle element)",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(fourElementCurve) });
+		})();
+
+		/*
+		Testing a huge curve
+		====================
+		From the specification:
+			Each input sample within this range will index into the shaping curve with a signal level of zero corresponding
+				to the center value of the curve array.
+		*/
+		(function() {
+			var bigCurve=[];
+			for(var i=0;i<=60000;i++) { bigCurve.push(i/3.5435); }
+			var inputChannelData=[[-1.0, 0, 1.0]];
+			var expectedChannelData=[[bigCurve[0], bigCurve[30000], bigCurve[60000]]];
+			executeTest("Testing a huge curve",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(bigCurve) });
+		})();
+
+		/*
+		Testing single-element curve (boundary condition)
+		=================================================
+		From the specification:
+			Each input sample within this range will index into the shaping curve with a signal level of zero corresponding
+				to the center value of the curve array.
+			Any sample value less than -1 will correspond to the first value in the curve array.
+			Any sample value greater than +1 will correspond to the last value in the curve array.
+			The implementation must perform linear interpolation between adjacent points in the curve.
+		Note:
+			I found a post on the W3C audio mailing list (from one of the Chris's) that suggested it would be feasible
+				to use the WaveShaperNode to create constant values.
+		*/
+		(function() {
+			var oneElementCurve=[1.0];
+			var inputChannelData=[[-1.0, 0, 1.0, -2.0, 2.0]];
+			var expectedChannelData=[[1.0, 1.0, 1.0, 1.0, 1.0]];
+			executeTest("Testing single-element curve (boundary condition)",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(oneElementCurve) });
+		})();
+
+		/*
+		Testing null curve (should return input values)
+		===============================================
+		From the specification:
+			Initially the curve attribute is null, which means that the WaveShaperNode will pass its input to its output
+				without modification.
+		*/
+		(function() {
+			var inputChannelData=[[-1.0, 0, 1.0, 2.0]];
+			var expectedChannelData=[[-1.0, 0.0, 1.0, 2.0]];
+			executeTest("Testing null curve (should return input values)",
+				inputChannelData, expectedChannelData, { curve: null });
+		})();
+
+		/*
+		Testing zero-element curve (unspecified result)
+		===============================================
+		From the specification:
+			Unspecified result (I assume it will be treated in the same way as a null curve).
+		Note:
+			Mozilla test_waveShaperNoCurve.html indicates they expect same results as a null curve.
+		*/
+		(function() {
+			var zeroElementCurve=[];
+			var inputChannelData=[[-1.0, 0, 1.0, 2.0]];
+			var expectedChannelData=[[-1.0, 0.0, 1.0, 2.0]];
+			executeTest("Testing zero-element curve (unspecified result)",
+				inputChannelData, expectedChannelData, { curve: new Float32Array(zeroElementCurve) });
+		})();
+	</script>
+</body>
+</html>

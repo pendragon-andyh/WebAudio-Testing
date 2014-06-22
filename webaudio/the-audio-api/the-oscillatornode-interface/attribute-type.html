@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+	<title>OscillatorNode interface - Type tests | WebAudio</title>
+
+	<script type="text/javascript" src="../../../resources/testharness.js"></script>
+	<script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+	
+	<script type="text/javascript" src="../../js/WebAudioTestHarness.js"></script>
+	<script type="text/javascript" src="../../js/WebAudioTestHarness-custom.js"></script>
+</head>
+<body>
+	<div id="log">
+	</div>
+
+	<script type="text/javascript">
+		/*
+		Sine wave
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Type - sine", doArrange, doAssert,
+				{ frequency: freqForTwoCycles, type: "sine" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect sine wave to start at 0");
+				assert_approx_equals(channelData[1250], 1, 0.05, "Expect sine wave to peak at 1");
+				assert_approx_equals(channelData[2500], 0, 0.01, "Expect sine wave to have zero at mid-point");
+				assert_approx_equals(channelData[3750], -1, 0.05, "Expect sine wave to peak at -1");
+				assert_approx_equals(channelData[5000], 0, 0.01, "Expect sine wave to end at 0");
+			}
+		})();
+
+		/*
+		Square wave
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Type - square", doArrange, doAssert,
+				{ frequency: freqForTwoCycles, type: "square" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect square wave to start at 0");
+				assert_approx_equals(channelData[10], 0.9, 0.1, "Expect square wave to quickly go to 1");
+				assert_approx_equals(channelData[1250], 0.9, 0.1, "Expect square wave to stay at 1");
+				assert_approx_equals(channelData[2490], 0.9, 0.1, "Expect square wave to stay at 1");
+				assert_approx_equals(channelData[2500], 0, 0.01, "Expect square wave to have zero at mid-point");
+				assert_approx_equals(channelData[2510], -0.9, 0.1, "Expect square wave to quickly go to -1");
+				assert_approx_equals(channelData[3750], -0.9, 0.1, "Expect square wave to stay at -1");
+				assert_approx_equals(channelData[4990], -0.9, 0.1, "Expect square wave to stay at -1");
+				assert_approx_equals(channelData[5000], 0, 0.01, "Expect square wave to end at 0");
+			}
+		})();
+
+		/*
+		Triangle
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Type - triangle", doArrange, doAssert,
+				{ frequency: freqForTwoCycles, type: "triangle" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect triangle wave to start at 0");
+				assert_approx_equals(channelData[625], 0.5, 0.1, "Expect triangle wave to pass thru 0.5");
+				assert_approx_equals(channelData[1250], 0.9, 0.1, "Expect triangle wave to peak at 1");
+				assert_approx_equals(channelData[1875], 0.5, 0.1, "Expect triangle wave to pass back thru 0.5");
+				assert_approx_equals(channelData[2500], 0, 0.01, "Expect triangle wave to have zero at mid-point");
+				assert_approx_equals(channelData[3125], -0.5, 0.1, "Expect triangle wave to pass thru -0.5");
+				assert_approx_equals(channelData[3750], -0.9, 0.1, "Expect triangle wave to peak at -1");
+				assert_approx_equals(channelData[4375], -0.5, 0.1, "Expect triangle wave to pass back thru -0.5");
+				assert_approx_equals(channelData[5000], 0, 0.01, "Expect triangle wave to end at 0");
+			}
+		})();
+
+		/*
+		Sawtooth
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Type - sawtooth", doArrange, doAssert,
+				{ frequency: freqForTwoCycles, type: "sawtooth" });
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+				node.connect(ac.destination);
+				node.start(0);
+				return node;
+			}
+
+			function doAssert(output) {
+				var channelData=output.getChannelData(0);
+
+				assert_approx_equals(channelData[0], 0, 0.01, "Expect sawtooth wave to start at 0");
+				assert_approx_equals(channelData[1250], 0.5, 0.1, "Expect sawtooth wave to pass thru 0.5");
+				assert_approx_equals(channelData[2490], 0.9, 0.1, "Expect sawtooth wave to peak at 1");
+				assert_approx_equals(channelData[2500], 0, 0.01, "Expect sawtooth wave to have zero at mid-point");
+				assert_approx_equals(channelData[2510], -0.9, 0.1, "Expect sawtooth wave to peak at -1");
+				assert_approx_equals(channelData[3750], -0.5, 0.1, "Expect sawtooth wave to pass back thru -0.5");
+				assert_approx_equals(channelData[5000], 0, 0.01, "Expect sawtooth wave to end at 0");
+			}
+		})();
+
+		/*
+		Bad-named type
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Type - bad type", doArrange, null, null);
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+
+				assert_throws(null,
+					function() { node.type="BadName"; },
+					"Expect exception because type is bad");
+			}
+		})();
+
+		/*
+		Type is case-sensitive
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Type is case-sensitive", doArrange, null, null);
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+
+				assert_throws(null,
+					function() { node.type="SINE"; },
+					"Expect exception because type is case-sensitive");
+			} 
+		})();
+
+		/*
+		Cannot directly set type to "custom"
+		*/
+		(function() {
+			var freqForTwoCycles=WebAudioTestHarness.globalDefaults.sampleRate/5000;
+			WebAudioTestHarness.runTest("Cannot directly set type to 'custom'", doArrange, null, null);
+
+			function doArrange(ac) {
+				var node=ac.createOscillator();
+
+				assert_throws(null,
+					function() { node.type="custom"; },
+					"Expect exception because type cannot be set directly to 'custom'");
+			}
+		})();
+	</script>
+</body>
+</html>
