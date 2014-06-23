@@ -16,37 +16,41 @@
 
 	<script type="text/javascript">
 		/*
-		LinearRampToValueAtTime with no previous events"
+		LinearRampToValueAtTime without previous scheduled-event.
+		Specification says that LinearRampToValueAtTime ramps from the previous scheduled-event.
+		If there is no previous scheduled-event then the AudioParam does not know when the slope should
+		start.  So in this case, the method acts exactly like setValueAtTime - and the value instantaneously
+		changes from the previous value to the new value.
 		*/
 		(function() {
-			executeTest("LinearRampToValueAtTime with no previous events", arrangeFn, assertFn);
+			executeTest("LinearRampToValueAtTime without previous scheduled-event", arrangeFn, assertFn);
 
 			function arrangeFn(ac, audioParam) {
 				audioParam.value=0;
 
-				//Schedule linearRampToValueAtTime to increase value to 1 over 250 samples.
+				//Schedule linearRampToValueAtTime to increase value to 1 after 250 samples.
 				audioParam.linearRampToValueAtTime(1, this.convertSamplesToSeconds(250));
 			}
 
 			//Assert that the value changes at the correct time.
 			function assertFn(actualData) {
 				assert_approx_equals(actualData[0], 0, 0, "Expect start of output to be 0");
-				assert_approx_equals(actualData[125], 0.5, 0, "Expect output to be 0.5 half-way up");
-				assert_approx_equals(actualData[250], 1, 0, "Expect output to be 1 after ramp has finished");
+				assert_approx_equals(actualData[249], 0, 0, "Expect output to be 0 before change has finished");
+				assert_approx_equals(actualData[250], 1, 0, "Expect output to be 1 after change has finished");
 			}
 		})();
 
 		/*
-		LinearRampToValueAtTime with previous 'setValueAtTime' events
+		LinearRampToValueAtTime with previous scheduled-event.
 		*/
 		(function() {
-			executeTest("LinearRampToValueAtTime with previous 'setValueAtTime' event", arrangeFn, assertFn);
+			executeTest("LinearRampToValueAtTime with previous scheduled-event", arrangeFn, assertFn);
 
 			function arrangeFn(ac, audioParam) {
-				audioParam.value=0;
+				//The previous scheduled event.
 				audioParam.setValueAtTime(0, 0);
 
-				//Schedule linearRampToValueAtTime to increase value to 1 over 250 samples.
+				//Schedule linearRampToValueAtTime to ramp from 0 to 1 over 250 samples.
 				audioParam.linearRampToValueAtTime(1, this.convertSamplesToSeconds(250));
 			}
 
@@ -59,13 +63,14 @@
 		})();
 
 		/*
-		LinearRampToValueAtTime with previous 'linearRampToValueAtTime' events
+		Multiple linearRampToValueAtTime calls.
 		*/
 		(function() {
-			executeTest("Multiple linearRampToValueAtTime", arrangeFn, assertFn);
+			executeTest("Multiple linearRampToValueAtTime calls", arrangeFn, assertFn);
 
 			function arrangeFn(ac, audioParam) {
-				audioParam.value=0;
+				//The previous scheduled event.
+				audioParam.setValueAtTime(0, 0);
 
 				//Schedule linearRampToValueAtTime to increase value to 1 over 250 samples.
 				audioParam.linearRampToValueAtTime(1, this.convertSamplesToSeconds(250));
@@ -76,9 +81,11 @@
 
 			//Assert that the value changes at the correct time.
 			function assertFn(actualData) {
-				assert_approx_equals(actualData[250], 1, 0, "Expect output to be 1 before down-ramp starts");
-				assert_approx_equals(actualData[500], 0.5, 0, "Expect output to be 0.5 half-way down");
-				assert_approx_equals(actualData[750], 0, 0, "Expect output to be 0 after down-ramp is complete");
+				assert_approx_equals(actualData[0], 0, 0, "Expect start of output to be 0");
+				assert_approx_equals(actualData[125], 0.5, 0.01, "Expect output to be 0.5 half-way up");
+				assert_approx_equals(actualData[250], 1, 0.01, "Expect output to be 1 before down-ramp starts");
+				assert_approx_equals(actualData[500], 0.5, 0.01, "Expect output to be 0.5 half-way down");
+				assert_approx_equals(actualData[750], 0, 0.01, "Expect output to be 0 after down-ramp is complete");
 			}
 		})();
 	</script>
